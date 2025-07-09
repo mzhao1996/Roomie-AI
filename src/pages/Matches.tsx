@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { matchingEngine, type MatchResult } from '../services/matchingEngine';
-import { MOCK_USERS, type MockUser } from '../data/mockUsers';
+// Removed: import { MOCK_USERS, type MockUser } from '../data/mockUsers';
 import { fetchCompletedUsers } from '../services/userService';
 
 const Matches: React.FC = () => {
@@ -42,30 +42,16 @@ const Matches: React.FC = () => {
 
       // 从数据库获取候选用户
       const allUsers = await fetchCompletedUsers();
+      console.log(allUsers);
       // 过滤掉当前用户
       const candidateUsers = allUsers.filter(u => u.id !== user.uid);
-      // 转换为 MockUser 结构
-      const mappedCandidates = candidateUsers.map(u => ({
-        id: u.id,
-        bio: u.bio ?? '',
-        verificationStatus: u.verification_status as 'verified' | 'pending' | 'unverified',
-        joinedDate: u.joined_date,
-        basicInfo: u.basic_info,
-        scheduleInfo: u.schedule_info,
-        preferencesInfo: u.preferences_info,
-        servicesInfo: u.services_info,
-        housingInfo: u.housing_info,
-        completed: u.completed,
-        completedAt: u.completed_at,
-        profilePicture: u.profile_picture,
-      }));
-
+      // 直接传递 candidateUsers（snake_case）
       const matchResults = await matchingEngine.findMatches({
         currentUser: onboardingData,
         maxResults: 10,
-        minScore: 60,
+        minScore: 30,
         useAI: useAI
-      }, mappedCandidates);
+      }, candidateUsers);
 
       setMatches(matchResults);
     } catch (err) {
@@ -104,17 +90,17 @@ const Matches: React.FC = () => {
     return scheduleMap[schedule] || schedule;
   };
 
-  const handleSendMessage = (matchUser: MockUser) => {
+  const handleSendMessage = (matchUser: any) => {
     // Create a simple message prompt
     const message = prompt(
-      `Send a message to ${matchUser.basicInfo?.firstName} ${matchUser.basicInfo?.lastName}:`,
-      `Hi ${matchUser.basicInfo?.firstName}! I saw your profile and think we could be great roommates. Would you like to chat about finding a place together?`
+      `Send a message to ${matchUser.basic_info?.first_name} ${matchUser.basic_info?.last_name}:`,
+      `Hi ${matchUser.basic_info?.first_name}! I saw your profile and think we could be great roommates. Would you like to chat about finding a place together?`
     );
     
     if (message && message.trim()) {
       // For now, just show a success alert
       // In a real app, this would send the message to a backend service
-      alert(`Message sent to ${matchUser.basicInfo?.firstName}!\n\nMessage: "${message}"\n\nThey will be notified and can respond through the app.`);
+      alert(`Message sent to ${matchUser.basic_info?.first_name}!\n\nMessage: "${message}"\n\nThey will be notified and can respond through the app.`);
     }
   };
 
@@ -175,17 +161,17 @@ const Matches: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-3">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {matchUser.basicInfo?.firstName?.charAt(0)}{matchUser.basicInfo?.lastName?.charAt(0)}
+                  {matchUser.basic_info?.first_name?.charAt(0)}{matchUser.basic_info?.last_name?.charAt(0)}
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold text-gray-800 mb-1">
-                    {matchUser.basicInfo?.firstName} {matchUser.basicInfo?.lastName}
+                    {matchUser.basic_info?.first_name} {matchUser.basic_info?.last_name}
                   </h3>
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getCompatibilityBg(match.matchScore)} ${getCompatibilityColor(match.matchScore)} border-2`}>
                       {Math.round(match.matchScore)}% Match
                     </span>
-                    {matchUser.verificationStatus === 'verified' && (
+                    {matchUser.verification_status === 'verified' && (
                       <span className="flex items-center text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-full">
                         <span className="mr-1">✓</span> Verified
                       </span>
@@ -196,19 +182,19 @@ const Matches: React.FC = () => {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <span>📍</span>
-                  <span className="font-medium">{matchUser.basicInfo?.location}</span>
+                  <span className="font-medium">{matchUser.basic_info?.location}</span>
                 </div>
                 <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <span>🎂</span>
-                  <span className="font-medium">{formatAge(matchUser.basicInfo?.age || '')}</span>
+                  <span className="font-medium">{formatAge(matchUser.basic_info?.age || '')}</span>
                 </div>
                 <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <span>💼</span>
-                  <span className="font-medium">{formatWorkSchedule(matchUser.scheduleInfo?.workSchedule || '')}</span>
+                  <span className="font-medium">{formatWorkSchedule(matchUser.schedule_info?.work_schedule || '')}</span>
                 </div>
                 <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <span>💰</span>
-                  <span className="font-medium">${matchUser.housingInfo?.budget?.min}-${matchUser.housingInfo?.budget?.max}/month</span>
+                  <span className="font-medium">${matchUser.housing_info?.budget?.min}-${matchUser.housing_info?.budget?.max}/month</span>
                 </div>
               </div>
             </div>
@@ -264,7 +250,7 @@ const Matches: React.FC = () => {
                       <span className="mr-2">💡</span> Services Offered:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {matchUser.servicesInfo?.servicesOffered?.map(service => (
+                      {matchUser.services_info?.services_offered?.map((service: string) => (
                         <span key={service} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium border border-green-200">
                           {service}
                         </span>
@@ -276,7 +262,7 @@ const Matches: React.FC = () => {
                       <span className="mr-2">🔍</span> Services Needed:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {matchUser.servicesInfo?.servicesNeeded?.map(service => (
+                      {matchUser.services_info?.services_needed?.map((service: string) => (
                         <span key={service} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium border border-blue-200">
                           {service}
                         </span>
@@ -294,16 +280,16 @@ const Matches: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="bg-white p-3 rounded-lg shadow-sm">
                     <span className="font-medium text-gray-700">Wake up:</span>
-                    <p className="text-lg font-bold text-blue-600">{matchUser.scheduleInfo?.wakeUpTime}</p>
+                    <p className="text-lg font-bold text-blue-600">{matchUser.schedule_info?.wake_up_time}</p>
                   </div>
                   <div className="bg-white p-3 rounded-lg shadow-sm">
                     <span className="font-medium text-gray-700">Bedtime:</span>
-                    <p className="text-lg font-bold text-purple-600">{matchUser.scheduleInfo?.bedTime}</p>
+                    <p className="text-lg font-bold text-purple-600">{matchUser.schedule_info?.bed_time}</p>
                   </div>
                   <div className="bg-white p-3 rounded-lg shadow-sm">
                     <span className="font-medium text-gray-700">Work from home:</span>
-                    <p className={`text-lg font-bold ${matchUser.scheduleInfo?.workFromHome ? 'text-green-600' : 'text-red-600'}`}>
-                      {matchUser.scheduleInfo?.workFromHome ? 'Yes' : 'No'}
+                    <p className={`text-lg font-bold ${matchUser.schedule_info?.work_from_home ? 'text-green-600' : 'text-red-600'}`}>
+                      {matchUser.schedule_info?.work_from_home ? 'Yes' : 'No'}
                     </p>
                   </div>
                 </div>
@@ -318,31 +304,31 @@ const Matches: React.FC = () => {
                   <div className="space-y-3">
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <span className="font-medium text-gray-700">Move-in Date:</span>
-                      <p className="font-bold text-green-600">{matchUser.housingInfo?.moveInDate}</p>
+                      <p className="font-bold text-green-600">{matchUser.housing_info?.move_in_date}</p>
                     </div>
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <span className="font-medium text-gray-700">Preferred Area:</span>
-                      <p className="font-bold text-blue-600">{matchUser.housingInfo?.preferredLocation}</p>
+                      <p className="font-bold text-blue-600">{matchUser.housing_info?.preferred_location}</p>
                     </div>
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <span className="font-medium text-gray-700">Housing Type:</span>
-                      <p className="font-bold text-purple-600">{matchUser.housingInfo?.housingType === 'apartment' ? 'Apartment' : 'House'}</p>
+                      <p className="font-bold text-purple-600">{matchUser.housing_info?.housing_type === 'apartment' ? 'Apartment' : 'House'}</p>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <span className="font-medium text-gray-700">Pet Friendly:</span>
-                      <p className={`font-bold ${matchUser.preferencesInfo?.petFriendly ? 'text-green-600' : 'text-red-600'}`}>
-                        {matchUser.preferencesInfo?.petFriendly ? 'Yes' : 'No'}
+                      <p className={`font-bold ${matchUser.preferences_info?.pet_friendly ? 'text-green-600' : 'text-red-600'}`}>
+                        {matchUser.preferences_info?.pet_friendly ? 'Yes' : 'No'}
                       </p>
                     </div>
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <span className="font-medium text-gray-700">Noise Level:</span>
-                      <p className="font-bold text-orange-600">{matchUser.preferencesInfo?.noiseLevel}</p>
+                      <p className="font-bold text-orange-600">{matchUser.preferences_info?.noise_level}</p>
                     </div>
                     <div className="bg-white p-3 rounded-lg shadow-sm">
                       <span className="font-medium text-gray-700">Cleanliness:</span>
-                      <p className="font-bold text-teal-600">{matchUser.preferencesInfo?.cleanlinessLevel}</p>
+                      <p className="font-bold text-teal-600">{matchUser.preferences_info?.cleanliness_level}</p>
                     </div>
                   </div>
                 </div>
