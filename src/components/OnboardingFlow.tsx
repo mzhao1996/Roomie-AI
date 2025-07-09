@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { OnboardingData } from '../types/onboarding';
 import { DEFAULT_ONBOARDING_DATA } from '../types/onboarding';
 import { useAuth } from '../AuthContext';
+import { upsertOnboardingData } from '../services/userService';
 
 // Step components
 import StepIndicator from './onboarding/StepIndicator';
@@ -64,7 +65,8 @@ const OnboardingFlow: React.FC = () => {
         return !!(onboardingData.basicInfo.firstName && 
                  onboardingData.basicInfo.lastName && 
                  onboardingData.basicInfo.age && 
-                 onboardingData.basicInfo.location);
+                 onboardingData.basicInfo.location &&
+                 onboardingData.basicInfo.bio); // bio 也必填
       case 2:
         return !!onboardingData.scheduleInfo.workSchedule;
       case 3:
@@ -97,22 +99,51 @@ const OnboardingFlow: React.FC = () => {
 
   const handleComplete = async () => {
     if (!canProceedToNext()) return;
-    
     setIsSubmitting(true);
     try {
+      // 构造下划线风格的字段，并去除驼峰字段
+      const {
+        basicInfo,
+        scheduleInfo,
+        preferencesInfo,
+        servicesInfo,
+        housingInfo,
+        completedAt,
+        ...rest
+      } = onboardingData;
       const completedData = {
+        ...rest,
+        completed: true,
+        completed_at: new Date().toISOString(),
+        bio: basicInfo.bio === '' ? null : basicInfo.bio,
+        verification_status: 'unverified',
+        joined_date: new Date().toISOString(),
+        basic_info: basicInfo,
+        schedule_info: scheduleInfo,
+        preferences_info: preferencesInfo,
+        services_info: servicesInfo,
+        housing_info: housingInfo,
+      };
+      // 只将 completedData 用于 Supabase 和 localStorage，state 仍用原结构
+      setOnboardingData({
         ...onboardingData,
         completed: true,
-        completedAt: new Date().toISOString()
-      };
-      
-      setOnboardingData(completedData);
-      
+        completedAt: new Date().toISOString(),
+      });
       // Save to localStorage
       if (user) {
         localStorage.setItem(`onboarding_${user.uid}`, JSON.stringify(completedData));
+        // 调试日志：输出 userId 和数据
+        console.log('[Onboarding Debug] userId:', user.uid);
+        console.log('[Onboarding Debug] completedData:', completedData);
+        // 调用 Supabase upsert
+        const error = await upsertOnboardingData(user.uid, completedData);
+        if (error) {
+          console.error('[Onboarding Debug] Supabase upsert error:', error.message, error);
+        } else {
+          console.log('[Onboarding Debug] Supabase upsert success');
+        }
       }
-      
       // Redirect to dashboard after a brief delay
       setTimeout(() => {
         navigate('/dashboard');

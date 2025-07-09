@@ -86,6 +86,38 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onChange }) => {
             required
           />
         </div>
+
+        <div className="form-group">
+          <label htmlFor="bio">Bio <span>*</span></label>
+          <textarea
+            id="bio"
+            value={data.bio}
+            onChange={e => onChange({ ...data, bio: e.target.value })}
+            placeholder="Tell us about yourself"
+            required
+            className="form-control"
+            rows={4}
+            style={{
+              resize: 'vertical',
+              minHeight: '80px',
+              fontSize: '1rem',
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              width: '100%',
+              background: '#fff',
+              color: '#222',
+              boxSizing: 'border-box',
+              marginBottom: '4px',
+            }}
+          />
+          <style>{`
+            #bio::placeholder {
+              color: #b0b0b0;
+              opacity: 1;
+            }
+          `}</style>
+        </div>
       </div>
     </div>
   );

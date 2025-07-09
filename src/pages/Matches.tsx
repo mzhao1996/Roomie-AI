@@ -3,6 +3,7 @@ import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { matchingEngine, type MatchResult } from '../services/matchingEngine';
 import { MOCK_USERS, type MockUser } from '../data/mockUsers';
+import { fetchCompletedUsers } from '../services/userService';
 
 const Matches: React.FC = () => {
   const { user } = useAuth();
@@ -39,15 +40,32 @@ const Matches: React.FC = () => {
         return;
       }
 
+      // 从数据库获取候选用户
+      const allUsers = await fetchCompletedUsers();
       // 过滤掉当前用户
-      const candidateUsers = MOCK_USERS.filter(u => u.id !== user.uid);
+      const candidateUsers = allUsers.filter(u => u.id !== user.uid);
+      // 转换为 MockUser 结构
+      const mappedCandidates = candidateUsers.map(u => ({
+        id: u.id,
+        bio: u.bio ?? '',
+        verificationStatus: u.verification_status as 'verified' | 'pending' | 'unverified',
+        joinedDate: u.joined_date,
+        basicInfo: u.basic_info,
+        scheduleInfo: u.schedule_info,
+        preferencesInfo: u.preferences_info,
+        servicesInfo: u.services_info,
+        housingInfo: u.housing_info,
+        completed: u.completed,
+        completedAt: u.completed_at,
+        profilePicture: u.profile_picture,
+      }));
 
       const matchResults = await matchingEngine.findMatches({
         currentUser: onboardingData,
         maxResults: 10,
         minScore: 60,
         useAI: useAI
-      }, candidateUsers);
+      }, mappedCandidates);
 
       setMatches(matchResults);
     } catch (err) {

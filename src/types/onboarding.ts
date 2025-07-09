@@ -5,6 +5,7 @@ export interface BasicInfo {
   age: string;
   phoneNumber: string;
   location: string;
+  bio: string; // 新增
 }
 
 export interface ScheduleInfo {
@@ -54,7 +55,8 @@ export const DEFAULT_ONBOARDING_DATA: OnboardingData = {
     lastName: '',
     age: '',
     phoneNumber: '',
-    location: ''
+    location: '',
+    bio: '', // 改为空字符串
   },
   scheduleInfo: {
     workSchedule: 'day-shift',
