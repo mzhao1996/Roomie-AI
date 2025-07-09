@@ -7,108 +7,84 @@ interface PreferencesStepProps {
 }
 
 const PreferencesStep: React.FC<PreferencesStepProps> = ({ data, onChange }) => {
-  const handleChange = (field: keyof PreferencesInfo, value: string | boolean) => {
+  const handleChange = (field: keyof PreferencesInfo, value: any) => {
     onChange({ ...data, [field]: value });
   };
 
   return (
     <div className="onboarding-step">
       <div className="step-header">
-        <h2>Your living preferences</h2>
-        <p>Help us find roommates who share your values and lifestyle</p>
+        <h2>Preferences</h2>
+        <p>Tell us about your living preferences</p>
       </div>
-
       <div className="step-content">
-        <div className="preference-section">
-          <h3>Inclusion & Values</h3>
-          <div className="checkbox-group">
-            <label className="checkbox-label inclusive-option">
-              <input
-                type="checkbox"
-                checked={data.lgbtqInclusive}
-                onChange={(e) => handleChange('lgbtqInclusive', e.target.checked)}
-              />
-              <span className="checkbox-text">
-                <span className="option-title">LGBTQ+ Inclusive Living 🏳️‍🌈</span>
-                <span className="option-description">I want to live in an LGBTQ+ friendly environment</span>
-              </span>
-            </label>
-          </div>
+        <div className="form-group">
+          <label htmlFor="lgbtq_inclusive">LGBTQ+ Inclusive</label>
+          <input
+            type="checkbox"
+            id="lgbtq_inclusive"
+            checked={data.lgbtq_inclusive}
+            onChange={e => handleChange('lgbtq_inclusive', e.target.checked)}
+          />
         </div>
-
-        <div className="preference-section">
-          <h3>Roommate Preferences</h3>
-          <div className="form-group">
-            <label htmlFor="genderPreference">Gender Preference</label>
-            <select
-              id="genderPreference"
-              value={data.genderPreference}
-              onChange={(e) => handleChange('genderPreference', e.target.value as PreferencesInfo['genderPreference'])}
-            >
-              <option value="no-preference">No Preference</option>
-              <option value="same-gender">Same Gender</option>
-              <option value="different-gender">Different Gender</option>
-            </select>
-          </div>
+        <div className="form-group">
+          <label htmlFor="gender_preference">Gender Preference</label>
+          <select
+            id="gender_preference"
+            value={data.gender_preference}
+            onChange={e => handleChange('gender_preference', e.target.value)}
+          >
+            <option value="no-preference">No Preference</option>
+            <option value="same-gender">Same Gender</option>
+            <option value="different-gender">Different Gender</option>
+          </select>
         </div>
-
-        <div className="preference-section">
-          <h3>Lifestyle Preferences</h3>
-          
-          <div className="checkbox-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={data.petFriendly}
-                onChange={(e) => handleChange('petFriendly', e.target.checked)}
-              />
-              <span className="checkbox-text">
-                <span className="option-title">Pet Friendly 🐕</span>
-                <span className="option-description">I'm okay living with pets</span>
-              </span>
-            </label>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="smokingTolerance">Smoking Policy</label>
-            <select
-              id="smokingTolerance"
-              value={data.smokingTolerance}
-              onChange={(e) => handleChange('smokingTolerance', e.target.value as PreferencesInfo['smokingTolerance'])}
-            >
-              <option value="no-smoking">No Smoking</option>
-              <option value="outdoor-only">Outdoor Only</option>
-              <option value="indoor-ok">Indoor OK</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="noiseLevel">Noise Tolerance</label>
-            <select
-              id="noiseLevel"
-              value={data.noiseLevel}
-              onChange={(e) => handleChange('noiseLevel', e.target.value as PreferencesInfo['noiseLevel'])}
-            >
-              <option value="very-quiet">Very Quiet</option>
-              <option value="quiet">Quiet</option>
-              <option value="moderate">Moderate</option>
-              <option value="lively">Lively</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="cleanlinessLevel">Cleanliness Level</label>
-            <select
-              id="cleanlinessLevel"
-              value={data.cleanlinessLevel}
-              onChange={(e) => handleChange('cleanlinessLevel', e.target.value as PreferencesInfo['cleanlinessLevel'])}
-            >
-              <option value="very-clean">Very Clean</option>
-              <option value="clean">Clean</option>
-              <option value="moderate">Moderate</option>
-              <option value="relaxed">Relaxed</option>
-            </select>
-          </div>
+        <div className="form-group">
+          <label htmlFor="pet_friendly">Pet Friendly</label>
+          <input
+            type="checkbox"
+            id="pet_friendly"
+            checked={data.pet_friendly}
+            onChange={e => handleChange('pet_friendly', e.target.checked)}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="smoking_tolerance">Smoking Tolerance</label>
+          <select
+            id="smoking_tolerance"
+            value={data.smoking_tolerance}
+            onChange={e => handleChange('smoking_tolerance', e.target.value)}
+          >
+            <option value="no-smoking">No Smoking</option>
+            <option value="outdoor-only">Outdoor Only</option>
+            <option value="indoor-ok">Indoor OK</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="noise_level">Noise Level</label>
+          <select
+            id="noise_level"
+            value={data.noise_level}
+            onChange={e => handleChange('noise_level', e.target.value)}
+          >
+            <option value="very-quiet">Very Quiet</option>
+            <option value="quiet">Quiet</option>
+            <option value="moderate">Moderate</option>
+            <option value="lively">Lively</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="cleanliness_level">Cleanliness Level</label>
+          <select
+            id="cleanliness_level"
+            value={data.cleanliness_level}
+            onChange={e => handleChange('cleanliness_level', e.target.value)}
+          >
+            <option value="very-clean">Very Clean</option>
+            <option value="clean">Clean</option>
+            <option value="moderate">Moderate</option>
+            <option value="relaxed">Relaxed</option>
+          </select>
         </div>
       </div>
     </div>

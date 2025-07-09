@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { OnboardingData } from '../types/onboarding';
-import { DEFAULT_ONBOARDING_DATA } from '../types/onboarding';
+import type { DbUser, BasicInfo, ScheduleInfo, PreferencesInfo, ServicesInfo, HousingInfo } from '../types/onboarding';
 import { useAuth } from '../AuthContext';
-
-// Step components
 import StepIndicator from './onboarding/StepIndicator';
 import BasicInfoStep from './onboarding/BasicInfoStep';
 import ScheduleStep from './onboarding/ScheduleStep';
 import PreferencesStep from './onboarding/PreferencesStep';
 import ServicesStep from './onboarding/ServicesStep';
 import HousingStep from './onboarding/HousingStep';
+import { updateUser } from '../services/userApi';
 
 const STEP_TITLES = [
   'Basic Info',
@@ -20,59 +18,88 @@ const STEP_TITLES = [
   'Housing'
 ];
 
+const DEFAULT_BASIC_INFO: BasicInfo = {
+  first_name: '',
+  last_name: '',
+  age: '',
+  phone_number: '',
+  location: ''
+};
+const DEFAULT_SCHEDULE_INFO: ScheduleInfo = {
+  work_schedule: 'day-shift',
+  wake_up_time: '',
+  bed_time: '',
+  work_from_home: false
+};
+const DEFAULT_PREFERENCES_INFO: PreferencesInfo = {
+  lgbtq_inclusive: false,
+  gender_preference: 'no-preference',
+  pet_friendly: false,
+  smoking_tolerance: 'no-smoking',
+  noise_level: 'moderate',
+  cleanliness_level: 'clean'
+};
+const DEFAULT_SERVICES_INFO: ServicesInfo = {
+  services_offered: [],
+  services_needed: []
+};
+const DEFAULT_HOUSING_INFO: HousingInfo = {
+  move_in_date: '',
+  budget: { min: 0, max: 0 },
+  preferred_location: '',
+  housing_type: 'apartment'
+};
+
 const OnboardingFlow: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [onboardingData, setOnboardingData] = useState<OnboardingData>(DEFAULT_ONBOARDING_DATA);
+  const [basic_info, setBasicInfo] = useState<BasicInfo>(DEFAULT_BASIC_INFO);
+  const [schedule_info, setScheduleInfo] = useState<ScheduleInfo>(DEFAULT_SCHEDULE_INFO);
+  const [preferences_info, setPreferencesInfo] = useState<PreferencesInfo>(DEFAULT_PREFERENCES_INFO);
+  const [services_info, setServicesInfo] = useState<ServicesInfo>(DEFAULT_SERVICES_INFO);
+  const [housing_info, setHousingInfo] = useState<HousingInfo>(DEFAULT_HOUSING_INFO);
+  const [bio, setBio] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Load saved data from localStorage on component mount
   useEffect(() => {
     if (user) {
       const savedData = localStorage.getItem(`onboarding_${user.uid}`);
       if (savedData) {
         try {
-          const parsedData = JSON.parse(savedData);
-          setOnboardingData(parsedData);
-          
-          // If already completed, redirect to dashboard
-          if (parsedData.completed) {
-            navigate('/dashboard');
-          }
-        } catch (error) {
-          console.error('Error loading saved onboarding data:', error);
-        }
+          const parsed = JSON.parse(savedData);
+          setBasicInfo(parsed.basic_info || DEFAULT_BASIC_INFO);
+          setScheduleInfo(parsed.schedule_info || DEFAULT_SCHEDULE_INFO);
+          setPreferencesInfo(parsed.preferences_info || DEFAULT_PREFERENCES_INFO);
+          setServicesInfo(parsed.services_info || DEFAULT_SERVICES_INFO);
+          setHousingInfo(parsed.housing_info || DEFAULT_HOUSING_INFO);
+          setBio(parsed.bio || '');
+          if (parsed.completed) navigate('/dashboard');
+        } catch (e) { console.error(e); }
       }
     }
   }, [user, navigate]);
 
-  // Save data to localStorage whenever it changes
   useEffect(() => {
     if (user) {
-      localStorage.setItem(`onboarding_${user.uid}`, JSON.stringify(onboardingData));
+      localStorage.setItem(`onboarding_${user.uid}`, JSON.stringify({
+        basic_info, schedule_info, preferences_info, services_info, housing_info, bio
+      }));
     }
-  }, [onboardingData, user]);
-
-  const updateStepData = (stepData: any) => {
-    setOnboardingData(prev => ({ ...prev, ...stepData }));
-  };
+  }, [basic_info, schedule_info, preferences_info, services_info, housing_info, bio, user]);
 
   const canProceedToNext = (): boolean => {
     switch (currentStep) {
       case 1:
-        return !!(onboardingData.basicInfo.firstName && 
-                 onboardingData.basicInfo.lastName && 
-                 onboardingData.basicInfo.age && 
-                 onboardingData.basicInfo.location);
+        return !!(basic_info.first_name && basic_info.last_name && basic_info.age && basic_info.location);
       case 2:
-        return !!onboardingData.scheduleInfo.workSchedule;
+        return !!schedule_info.work_schedule;
       case 3:
-        return true; // Preferences are optional
+        return true;
       case 4:
-        return true; // Services are optional
+        return true;
       case 5:
-        return !!(onboardingData.housingInfo.moveInDate);
+        return !!housing_info.move_in_date;
       default:
         return false;
     }
@@ -83,37 +110,36 @@ const OnboardingFlow: React.FC = () => {
       setCurrentStep(prev => prev + 1);
     }
   };
-
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
     }
   };
-
   const handleBackToHome = () => {
-    console.log('Navigating back to dashboard');
     navigate('/dashboard');
   };
 
   const handleComplete = async () => {
     if (!canProceedToNext()) return;
-    
     setIsSubmitting(true);
     try {
-      const completedData = {
-        ...onboardingData,
-        completed: true,
-        completedAt: new Date().toISOString()
-      };
-      
-      setOnboardingData(completedData);
-      
-      // Save to localStorage
       if (user) {
-        localStorage.setItem(`onboarding_${user.uid}`, JSON.stringify(completedData));
+        const dbData: Partial<DbUser> = {
+          id: user.uid,
+          bio: bio || '',
+          verification_status: 'pending',
+          joined_date: new Date().toISOString().slice(0, 10),
+          basic_info,
+          schedule_info,
+          preferences_info,
+          services_info,
+          housing_info,
+          completed: true,
+          completed_at: new Date().toISOString()
+        };
+        localStorage.setItem(`onboarding_${user.uid}`, JSON.stringify(dbData));
+        await updateUser(user.uid, dbData);
       }
-      
-      // Redirect to dashboard after a brief delay
       setTimeout(() => {
         navigate('/dashboard');
       }, 1000);
@@ -127,40 +153,15 @@ const OnboardingFlow: React.FC = () => {
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <BasicInfoStep
-            data={onboardingData.basicInfo}
-            onChange={(data) => updateStepData({ basicInfo: data })}
-          />
-        );
+        return <BasicInfoStep data={basic_info} onChange={setBasicInfo} bio={bio} onBioChange={setBio} />;
       case 2:
-        return (
-          <ScheduleStep
-            data={onboardingData.scheduleInfo}
-            onChange={(data) => updateStepData({ scheduleInfo: data })}
-          />
-        );
+        return <ScheduleStep data={schedule_info} onChange={setScheduleInfo} />;
       case 3:
-        return (
-          <PreferencesStep
-            data={onboardingData.preferencesInfo}
-            onChange={(data) => updateStepData({ preferencesInfo: data })}
-          />
-        );
+        return <PreferencesStep data={preferences_info} onChange={setPreferencesInfo} />;
       case 4:
-        return (
-          <ServicesStep
-            data={onboardingData.servicesInfo}
-            onChange={(data) => updateStepData({ servicesInfo: data })}
-          />
-        );
+        return <ServicesStep data={services_info} onChange={setServicesInfo} />;
       case 5:
-        return (
-          <HousingStep
-            data={onboardingData.housingInfo}
-            onChange={(data) => updateStepData({ housingInfo: data })}
-          />
-        );
+        return <HousingStep data={housing_info} onChange={setHousingInfo} />;
       default:
         return null;
     }
@@ -176,47 +177,16 @@ const OnboardingFlow: React.FC = () => {
           totalSteps={STEP_TITLES.length}
           stepTitles={STEP_TITLES}
         />
-        
-        <div className="onboarding-content">
-          {renderCurrentStep()}
-        </div>
-
+        <div className="onboarding-content">{renderCurrentStep()}</div>
         <div className="onboarding-navigation">
-          <button
-            type="button"
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
-            className="nav-button secondary"
-          >
-            Previous
-          </button>
-
-          <button 
-            type="button"
-            onClick={handleBackToHome}
-            className="nav-button back-to-home"
-          >
-            Back to Home
-          </button>
-
+          <button type="button" onClick={handlePrevious} disabled={currentStep === 1} className="nav-button secondary">Previous</button>
+          <button type="button" onClick={handleBackToHome} className="nav-button back-to-home">Back to Home</button>
           {isLastStep ? (
-            <button
-              type="button"
-              onClick={handleComplete}
-              disabled={!canProceedToNext() || isSubmitting}
-              className="nav-button primary complete-button"
-            >
+            <button type="button" onClick={handleComplete} disabled={!canProceedToNext() || isSubmitting} className="nav-button primary complete-button">
               {isSubmitting ? 'Completing...' : 'Complete Setup'}
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={!canProceedToNext()}
-              className="nav-button primary"
-            >
-              Next
-            </button>
+            <button type="button" onClick={handleNext} disabled={!canProceedToNext()} className="nav-button primary">Next</button>
           )}
         </div>
       </div>

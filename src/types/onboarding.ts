@@ -1,102 +1,57 @@
 // Onboarding data types and interfaces
+// 只保留 DbUser 及嵌套类型
 export interface BasicInfo {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   age: string;
-  phoneNumber: string;
+  phone_number: string;
   location: string;
 }
 
 export interface ScheduleInfo {
-  workSchedule: 'day-shift' | 'night-shift' | 'freelancer' | 'student' | 'remote' | 'irregular';
-  wakeUpTime: string;
-  bedTime: string;
-  workFromHome: boolean;
+  work_schedule: 'day-shift' | 'night-shift' | 'freelancer' | 'student' | 'remote' | 'irregular';
+  wake_up_time: string;
+  bed_time: string;
+  work_from_home: boolean;
 }
 
 export interface PreferencesInfo {
-  lgbtqInclusive: boolean;
-  genderPreference: 'no-preference' | 'same-gender' | 'different-gender';
-  petFriendly: boolean;
-  smokingTolerance: 'no-smoking' | 'outdoor-only' | 'indoor-ok';
-  noiseLevel: 'very-quiet' | 'quiet' | 'moderate' | 'lively';
-  cleanlinessLevel: 'very-clean' | 'clean' | 'moderate' | 'relaxed';
+  lgbtq_inclusive: boolean;
+  gender_preference: 'no-preference' | 'same-gender' | 'different-gender';
+  pet_friendly: boolean;
+  smoking_tolerance: 'no-smoking' | 'outdoor-only' | 'indoor-ok';
+  noise_level: 'very-quiet' | 'quiet' | 'moderate' | 'lively';
+  cleanliness_level: 'very-clean' | 'clean' | 'moderate' | 'relaxed';
 }
 
 export interface ServicesInfo {
-  servicesOffered: string[];
-  servicesNeeded: string[];
+  services_offered: string[];
+  services_needed: string[];
 }
 
 export interface HousingInfo {
-  moveInDate: string;
+  move_in_date: string;
   budget: {
     min: number;
     max: number;
   };
-  preferredLocation: string;
-  housingType: 'apartment' | 'house' | 'condo' | 'studio' | 'shared-room';
+  preferred_location: string;
+  housing_type: 'apartment' | 'house' | 'condo' | 'studio' | 'shared-room';
 }
 
-export interface OnboardingData {
-  basicInfo: BasicInfo;
-  scheduleInfo: ScheduleInfo;
-  preferencesInfo: PreferencesInfo;
-  servicesInfo: ServicesInfo;
-  housingInfo: HousingInfo;
+export interface DbUser {
+  id: string;
+  bio: string;
+  verification_status: 'verified' | 'pending' | 'unverified';
+  joined_date: string;
+  profile_picture?: string;
+  basic_info: BasicInfo;
+  schedule_info: ScheduleInfo;
+  preferences_info: PreferencesInfo;
+  services_info: ServicesInfo;
+  housing_info: HousingInfo;
   completed: boolean;
-  completedAt?: string;
-}
-
-export const DEFAULT_ONBOARDING_DATA: OnboardingData = {
-  basicInfo: {
-    firstName: '',
-    lastName: '',
-    age: '',
-    phoneNumber: '',
-    location: ''
-  },
-  scheduleInfo: {
-    workSchedule: 'day-shift',
-    wakeUpTime: '',
-    bedTime: '',
-    workFromHome: false
-  },
-  preferencesInfo: {
-    lgbtqInclusive: false,
-    genderPreference: 'no-preference',
-    petFriendly: false,
-    smokingTolerance: 'no-smoking',
-    noiseLevel: 'moderate',
-    cleanlinessLevel: 'clean'
-  },
-  servicesInfo: {
-    servicesOffered: [],
-    servicesNeeded: []
-  },
-  housingInfo: {
-    moveInDate: '',
-    budget: {
-      min: 0,
-      max: 0
-    },
-    preferredLocation: '',
-    housingType: 'apartment'
-  },
-  completed: false
-};
-
-export const SERVICE_OPTIONS = [
-  'Pet Sitting',
-  'House Cleaning',
-  'Cooking/Meal Prep',
-  'Grocery Shopping',
-  'Transportation',
-  'Tech Support',
-  'Language Exchange',
-  'Fitness Buddy',
-  'Study Partner',
-  'Gardening',
-  'Childcare',
-  'Elder Care'
-]; 
+  completed_at?: string;
+  match_score?: number;
+  match_reasons?: string[];
+} 

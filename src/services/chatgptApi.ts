@@ -113,14 +113,24 @@ Requirements:
 
   // Parse ChatGPT response
   private parseResponse(content: string): MatchingAnalysis {
+    function to_snake_case(obj: any): any {
+      if (Array.isArray(obj)) return obj.map(to_snake_case);
+      if (obj && typeof obj === 'object') {
+        return Object.fromEntries(
+          Object.entries(obj).map(([k, v]) => [
+            k.replace(/([A-Z])/g, '_$1').replace(/-/g, '_').toLowerCase(),
+            to_snake_case(v)
+          ])
+        );
+      }
+      return obj;
+    }
     try {
-      // Try to extract JSON part
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('No JSON found in response');
       }
-
-      const parsed = JSON.parse(jsonMatch[0]);
+      const parsed = to_snake_case(JSON.parse(jsonMatch[0]));
       
       // Validate response format
       if (typeof parsed.score !== 'number' || !Array.isArray(parsed.reasons)) {

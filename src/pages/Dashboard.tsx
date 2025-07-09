@@ -3,30 +3,33 @@ import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { useAuth } from '../AuthContext';
-import type { OnboardingData } from '../types/onboarding';
+import type { DbUser } from '../types/onboarding';
+import { fetchUsers } from '../services/userApi';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [current_user, set_current_user] = useState<DbUser | null>(null);
+  const [loading, set_loading] = useState(true);
+  const [error, set_error] = useState<string | null>(null);
+  const [all_users, set_all_users] = useState<DbUser[]>([]);
 
   useEffect(() => {
     if (user) {
-      const savedData = localStorage.getItem(`onboarding_${user.uid}`);
-      if (savedData) {
-        try {
-          const parsedData = JSON.parse(savedData);
-          setOnboardingData(parsedData);
-        } catch (error) {
-          console.error('Error loading onboarding data:', error);
-        }
-      }
-      setLoading(false);
+      fetchUsers()
+        .then((users) => {
+          set_all_users(users);
+          const found = users.find((u) => u.id === user.uid);
+          set_current_user(found || null);
+        })
+        .catch((e) => set_error(e.message))
+        .finally(() => set_loading(false));
+    } else {
+      set_loading(false);
     }
   }, [user]);
 
-  const handleSignOut = async () => {
+  const handle_sign_out = async () => {
     try {
       await signOut(auth);
     } catch (error) {
@@ -34,11 +37,11 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleStartOnboarding = () => {
+  const handle_start_onboarding = () => {
     navigate('/onboarding');
   };
 
-  const handleFindMatches = () => {
+  const handle_find_matches = () => {
     navigate('/matches');
   };
 
@@ -59,6 +62,8 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <div>
       {/* Header */}
@@ -77,7 +82,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <button 
-              onClick={handleSignOut}
+              onClick={handle_sign_out}
               className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
             >
               <span>👋</span>
@@ -86,26 +91,23 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </header>
-      
       {/* Main Content */}
       <div className="dashboard-main px-6 py-12">
         {/* Welcome Section */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">
-            Welcome back{onboardingData?.basicInfo?.firstName ? `, ${onboardingData.basicInfo.firstName}` : ''}! 👋
+            Welcome back{current_user?.basic_info?.first_name ? `, ${current_user.basic_info.first_name}` : ''}! 👋
           </h2>
           <p className="text-xl text-gray-600 mb-6">Ready to find your perfect roommate match?</p>
-          
-          {onboardingData?.completed && (
+          {current_user?.completed && (
             <div className="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full font-medium">
               <span className="mr-2">✅</span>
               Profile Complete - Ready to find matches!
             </div>
           )}
         </div>
-
         {/* Onboarding Prompt for Incomplete Profiles */}
-        {!onboardingData?.completed && (
+        {!current_user?.completed && (
           <div className="mb-12">
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-8 rounded-2xl shadow-xl text-white text-center">
               <div className="text-6xl mb-4">🚀</div>
@@ -116,16 +118,15 @@ const Dashboard: React.FC = () => {
               </p>
               <button 
                 className="bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                onClick={handleStartOnboarding}
+                onClick={handle_start_onboarding}
               >
-                {onboardingData ? 'Continue Onboarding' : 'Start Onboarding'} →
+                {current_user ? 'Continue Onboarding' : 'Start Onboarding'} →
               </button>
             </div>
           </div>
         )}
-
         {/* Profile Summary for Completed Profiles */}
-        {onboardingData?.completed && (
+        {current_user?.completed && (
           <div className="mb-12">
             <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
               <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
@@ -137,38 +138,34 @@ const Dashboard: React.FC = () => {
                   <div className="text-blue-600 text-2xl mb-2">⏰</div>
                   <div className="text-sm text-gray-600 mb-1">Schedule</div>
                   <div className="font-semibold text-gray-800">
-                    {onboardingData.scheduleInfo.workSchedule.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {current_user.schedule_info.work_schedule.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </div>
                 </div>
-                
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
                   <div className="text-green-600 text-2xl mb-2">💰</div>
                   <div className="text-sm text-gray-600 mb-1">Budget Range</div>
                   <div className="font-semibold text-gray-800">
-                    ${onboardingData.housingInfo.budget.min.toLocaleString()} - ${onboardingData.housingInfo.budget.max.toLocaleString()}/month
+                    ${current_user.housing_info.budget.min.toLocaleString()} - ${current_user.housing_info.budget.max.toLocaleString()}/month
                   </div>
                 </div>
-                
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
                   <div className="text-purple-600 text-2xl mb-2">📅</div>
                   <div className="text-sm text-gray-600 mb-1">Move-in Date</div>
                   <div className="font-semibold text-gray-800">
-                    {new Date(onboardingData.housingInfo.moveInDate).toLocaleDateString()}
+                    {new Date(current_user.housing_info.move_in_date).toLocaleDateString()}
                   </div>
                 </div>
-                
                 <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
                   <div className="text-orange-600 text-2xl mb-2">🏳️‍🌈</div>
                   <div className="text-sm text-gray-600 mb-1">LGBTQ+ Inclusive</div>
                   <div className="font-semibold text-gray-800">
-                    {onboardingData.preferencesInfo.lgbtqInclusive ? '✅ Yes' : '❌ No'}
+                    {current_user.preferences_info.lgbtq_inclusive ? '✅ Yes' : '❌ No'}
                   </div>
                 </div>
               </div>
             </div>
           </div>
         )}
-
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Complete Profile Card */}
@@ -178,10 +175,10 @@ const Dashboard: React.FC = () => {
                 📝
               </div>
               <h4 className="text-2xl font-bold text-gray-800 mb-2">
-                {onboardingData?.completed ? 'Update Profile' : 'Complete Profile'}
+                {current_user?.completed ? 'Update Profile' : 'Complete Profile'}
               </h4>
               <p className="text-gray-600 leading-relaxed">
-                {onboardingData?.completed 
+                {current_user?.completed 
                   ? 'Update your preferences, lifestyle, and requirements'
                   : 'Tell us about your lifestyle, preferences, and needs'
                 }
@@ -189,12 +186,11 @@ const Dashboard: React.FC = () => {
             </div>
             <button 
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              onClick={handleStartOnboarding}
+              onClick={handle_start_onboarding}
             >
-              {onboardingData?.completed ? '⚙️ Update Profile' : '🚀 Start Onboarding'}
+              {current_user?.completed ? '⚙️ Update Profile' : '🚀 Start Onboarding'}
             </button>
           </div>
-          
           {/* Find Matches Card */}
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 hover:shadow-2xl transition-all duration-300">
             <div className="text-center mb-6">
@@ -208,23 +204,22 @@ const Dashboard: React.FC = () => {
             </div>
             <button 
               className={`w-full font-bold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg transform ${
-                onboardingData?.completed
+                current_user?.completed
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white hover:shadow-xl hover:scale-105'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
-              disabled={!onboardingData?.completed}
-              onClick={handleFindMatches}
+              disabled={!current_user?.completed}
+              onClick={handle_find_matches}
             >
-              {onboardingData?.completed ? '🎯 Find My Matches' : '⏳ Complete Profile First'}
+              {current_user?.completed ? '🎯 Find My Matches' : '⏳ Complete Profile First'}
             </button>
-            {!onboardingData?.completed && (
+            {!current_user?.completed && (
               <p className="text-sm text-gray-500 mt-2 text-center">
                 Complete your profile to unlock matching
               </p>
             )}
           </div>
         </div>
-
         {/* Features Section */}
         <div className="mt-16">
           <h3 className="text-2xl font-bold text-gray-800 text-center mb-8">How Roomie AI Works</h3>
@@ -236,7 +231,6 @@ const Dashboard: React.FC = () => {
               <h4 className="text-xl font-semibold text-gray-800 mb-2">Complete Profile</h4>
               <p className="text-gray-600">Share your lifestyle, preferences, and housing needs</p>
             </div>
-            
             <div className="text-center">
               <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-4">
                 🤖
@@ -244,7 +238,6 @@ const Dashboard: React.FC = () => {
               <h4 className="text-xl font-semibold text-gray-800 mb-2">AI Matching</h4>
               <p className="text-gray-600">Our smart algorithm finds compatible roommates</p>
             </div>
-            
             <div className="text-center">
               <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-4">
                 💬

@@ -4,9 +4,11 @@ import type { BasicInfo } from '../../types/onboarding';
 interface BasicInfoStepProps {
   data: BasicInfo;
   onChange: (data: BasicInfo) => void;
+  bio: string;
+  onBioChange: (bio: string) => void;
 }
 
-const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onChange }) => {
+const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onChange, bio, onBioChange }) => {
   const handleChange = (field: keyof BasicInfo, value: string) => {
     onChange({ ...data, [field]: value });
   };
@@ -21,23 +23,23 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onChange }) => {
       <div className="step-content">
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="firstName">First Name *</label>
+            <label htmlFor="first_name">First Name *</label>
             <input
               type="text"
-              id="firstName"
-              value={data.firstName}
-              onChange={(e) => handleChange('firstName', e.target.value)}
+              id="first_name"
+              value={data.first_name}
+              onChange={(e) => handleChange('first_name', e.target.value)}
               placeholder="Enter your first name"
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="lastName">Last Name *</label>
+            <label htmlFor="last_name">Last Name *</label>
             <input
               type="text"
-              id="lastName"
-              value={data.lastName}
-              onChange={(e) => handleChange('lastName', e.target.value)}
+              id="last_name"
+              value={data.last_name}
+              onChange={(e) => handleChange('last_name', e.target.value)}
               placeholder="Enter your last name"
               required
             />
@@ -65,12 +67,12 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onChange }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="phoneNumber">Phone Number</label>
+          <label htmlFor="phone_number">Phone Number</label>
           <input
             type="tel"
-            id="phoneNumber"
-            value={data.phoneNumber}
-            onChange={(e) => handleChange('phoneNumber', e.target.value)}
+            id="phone_number"
+            value={data.phone_number}
+            onChange={(e) => handleChange('phone_number', e.target.value)}
             placeholder="(555) 123-4567"
           />
         </div>
@@ -84,6 +86,17 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ data, onChange }) => {
             onChange={(e) => handleChange('location', e.target.value)}
             placeholder="City, State"
             required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="bio">Bio (self introduction)</label>
+          <textarea
+            id="bio"
+            className="w-full border border-gray-300 rounded-md p-2 mt-2 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition min-h-[80px] resize-vertical"
+            value={bio}
+            onChange={e => onBioChange(e.target.value)}
+            placeholder="Tell your future roommate about yourself..."
+            maxLength={500}
           />
         </div>
       </div>

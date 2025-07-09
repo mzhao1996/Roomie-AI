@@ -1,12 +1,10 @@
-import type { OnboardingData } from '../types/onboarding';
-import type { MockUser } from '../data/mockUsers';
-import { chatGPTApi } from './chatgptApi';
+import type { DbUser } from '../types/onboarding';
 
 export interface MatchResult {
-  user: MockUser;
-  matchScore: number;
-  matchReasons: string[];
-  compatibilityAnalysis: {
+  user: DbUser;
+  match_score: number;
+  match_reasons: string[];
+  compatibility_analysis: {
     schedule: number;
     lifestyle: number;
     preferences: number;
@@ -17,10 +15,10 @@ export interface MatchResult {
 }
 
 export interface MatchingCriteria {
-  currentUser: OnboardingData;
-  maxResults?: number;
-  minScore?: number;
-  useAI?: boolean;
+  current_user: DbUser;
+  max_results?: number;
+  min_score?: number;
+  use_ai?: boolean;
 }
 
 class MatchingEngine {
@@ -33,32 +31,15 @@ class MatchingEngine {
     services: 0.10
   };
 
-  // Calculate schedule compatibility
-  private calculateScheduleCompatibility(user1: OnboardingData, user2: MockUser): number {
+  private calculateScheduleCompatibility(user1: DbUser, user2: DbUser): number {
     let score = 0;
-    const reasons: string[] = [];
-
     // Work type compatibility
-    const workScheduleCompatibility = this.getWorkScheduleScore(
-      user1.scheduleInfo?.workSchedule, 
-      user2.scheduleInfo?.workSchedule
-    );
+    const workScheduleCompatibility = user1.schedule_info?.work_schedule === user2.schedule_info?.work_schedule ? 100 : 50;
     score += workScheduleCompatibility * 0.4;
-
     // Sleep schedule compatibility
-    const sleepCompatibility = this.getSleepScheduleScore(
-      user1.scheduleInfo,
-      user2.scheduleInfo
-    );
-    score += sleepCompatibility * 0.4;
-
+    score += 50 * 0.4;
     // Work from home compatibility
-    const wfhCompatibility = this.getWorkFromHomeScore(
-      user1.scheduleInfo?.workFromHome,
-      user2.scheduleInfo?.workFromHome
-    );
-    score += wfhCompatibility * 0.2;
-
+    score += (user1.schedule_info?.work_from_home === user2.schedule_info?.work_from_home ? 100 : 60) * 0.2;
     return Math.min(100, score);
   }
 
@@ -114,24 +95,24 @@ class MatchingEngine {
   }
 
   // Calculate lifestyle compatibility
-  private calculateLifestyleCompatibility(user1: OnboardingData, user2: MockUser): number {
+  private calculateLifestyleCompatibility(user1: DbUser, user2: DbUser): number {
     let score = 0;
-    const prefs1 = user1.preferencesInfo;
-    const prefs2 = user2.preferencesInfo;
+    const prefs1 = user1.preferences_info;
+    const prefs2 = user2.preferences_info;
 
     if (!prefs1 || !prefs2) return 50;
 
     // Noise level compatibility (35%)
-    score += this.getNoiseCompatibility(prefs1.noiseLevel, prefs2.noiseLevel) * 0.35;
+    score += this.getNoiseCompatibility(prefs1.noise_level, prefs2.noise_level) * 0.35;
 
     // Cleanliness compatibility (35%)
-    score += this.getCleanlinessCompatibility(prefs1.cleanlinessLevel, prefs2.cleanlinessLevel) * 0.35;
+    score += this.getCleanlinessCompatibility(prefs1.cleanliness_level, prefs2.cleanliness_level) * 0.35;
 
     // Pet compatibility (20%)
-    score += this.getPetCompatibility(prefs1.petFriendly, prefs2.petFriendly) * 0.20;
+    score += this.getPetCompatibility(prefs1.pet_friendly, prefs2.pet_friendly) * 0.20;
 
     // Smoking compatibility (10%)
-    score += this.getSmokingCompatibility(prefs1.smokingTolerance, prefs2.smokingTolerance) * 0.10;
+    score += this.getSmokingCompatibility(prefs1.smoking_tolerance, prefs2.smoking_tolerance) * 0.10;
 
     return Math.min(100, score);
   }
@@ -180,28 +161,28 @@ class MatchingEngine {
   }
 
   // Calculate preferences compatibility
-  private calculatePreferencesCompatibility(user1: OnboardingData, user2: MockUser): number {
+  private calculatePreferencesCompatibility(user1: DbUser, user2: DbUser): number {
     let score = 0;
-    const prefs1 = user1.preferencesInfo;
-    const prefs2 = user2.preferencesInfo;
+    const prefs1 = user1.preferences_info;
+    const prefs2 = user2.preferences_info;
 
     if (!prefs1 || !prefs2) return 50;
 
     // LGBTQ+ inclusivity compatibility (40%)
-    const lgbtqScore = this.getLgbtqCompatibility(prefs1.lgbtqInclusive, prefs2.lgbtqInclusive);
+    const lgbtqScore = this.getLgbtqCompatibility(prefs1.lgbtq_inclusive, prefs2.lgbtq_inclusive);
     score += lgbtqScore * 0.40;
 
     // Gender preference compatibility (40%)
     const genderScore = this.getGenderPreferenceCompatibility(
-      prefs1.genderPreference, 
-      prefs2.genderPreference
+      prefs1.gender_preference, 
+      prefs2.gender_preference
     );
     score += genderScore * 0.40;
 
     // Housing type preference (20%)
     const housingScore = this.getHousingTypeCompatibility(
-      user1.housingInfo?.housingType,
-      user2.housingInfo?.housingType
+      user1.housing_info?.housing_type,
+      user2.housing_info?.housing_type
     );
     score += housingScore * 0.20;
 
@@ -240,11 +221,11 @@ class MatchingEngine {
   }
 
   // Calculate location compatibility
-  private calculateLocationCompatibility(user1: OnboardingData, user2: MockUser): number {
-    const loc1 = user1.basicInfo?.location;
-    const loc2 = user2.basicInfo?.location;
-    const pref1 = user1.housingInfo?.preferredLocation;
-    const pref2 = user2.housingInfo?.preferredLocation;
+  private calculateLocationCompatibility(user1: DbUser, user2: DbUser): number {
+    const loc1 = user1.basic_info?.location;
+    const loc2 = user2.basic_info?.location;
+    const pref1 = user1.housing_info?.preferred_location;
+    const pref2 = user2.housing_info?.preferred_location;
 
     if (!loc1 || !loc2) return 50;
 
@@ -286,9 +267,9 @@ class MatchingEngine {
   }
 
   // Calculate budget compatibility
-  private calculateBudgetCompatibility(user1: OnboardingData, user2: MockUser): number {
-    const budget1 = user1.housingInfo?.budget;
-    const budget2 = user2.housingInfo?.budget;
+  private calculateBudgetCompatibility(user1: DbUser, user2: DbUser): number {
+    const budget1 = user1.housing_info?.budget;
+    const budget2 = user2.housing_info?.budget;
 
     if (!budget1 || !budget2) return 50;
 
@@ -306,9 +287,9 @@ class MatchingEngine {
   }
 
   // Calculate service exchange compatibility
-  private calculateServicesCompatibility(user1: OnboardingData, user2: MockUser): number {
-    const services1 = user1.servicesInfo;
-    const services2 = user2.servicesInfo;
+  private calculateServicesCompatibility(user1: DbUser, user2: DbUser): number {
+    const services1 = user1.services_info;
+    const services2 = user2.services_info;
 
     if (!services1 || !services2) return 50;
 
@@ -316,10 +297,10 @@ class MatchingEngine {
     let matches = 0;
 
     // Check service exchange complementarity
-    const offered1 = services1.servicesOffered || [];
-    const needed1 = services1.servicesNeeded || [];
-    const offered2 = services2.servicesOffered || [];
-    const needed2 = services2.servicesNeeded || [];
+    const offered1 = services1.services_offered || [];
+    const needed1 = services1.services_needed || [];
+    const offered2 = services2.services_offered || [];
+    const needed2 = services2.services_needed || [];
 
     // Services user1 offers that meet user2's needs
     const user1ToUser2 = needed2.filter(service => offered1.includes(service)).length;
@@ -337,27 +318,27 @@ class MatchingEngine {
 
   // Generate match reasons
   private generateMatchReasons(
-    user1: OnboardingData, 
-    user2: MockUser, 
+    user1: DbUser, 
+    user2: DbUser, 
     scores: any
   ): string[] {
     const reasons: string[] = [];
 
     if (scores.schedule >= 75) {
-      reasons.push(`Compatible schedules (${user1.scheduleInfo?.workSchedule} & ${user2.scheduleInfo?.workSchedule})`);
+      reasons.push(`Compatible schedules (${user1.schedule_info?.work_schedule} & ${user2.schedule_info?.work_schedule})`);
     }
 
     if (scores.lifestyle >= 80) {
-      if (user1.preferencesInfo?.cleanlinessLevel === user2.preferencesInfo?.cleanlinessLevel) {
-        reasons.push(`Shared cleanliness standards (${user1.preferencesInfo?.cleanlinessLevel})`);
+      if (user1.preferences_info?.cleanliness_level === user2.preferences_info?.cleanliness_level) {
+        reasons.push(`Shared cleanliness standards (${user1.preferences_info?.cleanliness_level})`);
       }
-      if (user1.preferencesInfo?.noiseLevel === user2.preferencesInfo?.noiseLevel) {
-        reasons.push(`Similar noise preferences (${user1.preferencesInfo?.noiseLevel})`);
+      if (user1.preferences_info?.noise_level === user2.preferences_info?.noise_level) {
+        reasons.push(`Similar noise preferences (${user1.preferences_info?.noise_level})`);
       }
     }
 
     if (scores.preferences >= 80) {
-      if (user1.preferencesInfo?.lgbtqInclusive && user2.preferencesInfo?.lgbtqInclusive) {
+      if (user1.preferences_info?.lgbtq_inclusive && user2.preferences_info?.lgbtq_inclusive) {
         reasons.push('Both value LGBTQ+ inclusive environment');
       }
     }
@@ -371,8 +352,8 @@ class MatchingEngine {
     }
 
     if (scores.services >= 70) {
-      const offered1 = user1.servicesInfo?.servicesOffered || [];
-      const needed2 = user2.servicesInfo?.servicesNeeded || [];
+      const offered1 = user1.services_info?.services_offered || [];
+      const needed2 = user2.services_info?.services_needed || [];
       const matches = needed2.filter(service => offered1.includes(service));
       if (matches.length > 0) {
         reasons.push(`Can help with: ${matches.join(', ')}`);
@@ -384,8 +365,8 @@ class MatchingEngine {
 
   // ChatGPT API enhanced matching
   private async getAIEnhancedMatch(
-    user1: OnboardingData,
-    user2: MockUser,
+    user1: DbUser,
+    user2: DbUser,
     ruleBasedScore: number
   ): Promise<{ score: number; reasons: string[] }> {
     const aiPrompt = this.buildAIPrompt(user1, user2, ruleBasedScore);
@@ -405,21 +386,21 @@ class MatchingEngine {
     }
   }
 
-  private buildAIPrompt(user1: OnboardingData, user2: MockUser, baseScore: number): string {
+  private buildAIPrompt(user1: DbUser, user2: DbUser, baseScore: number): string {
     return `
 Analyze roommate compatibility between these two users:
 
 User 1:
-- Schedule: ${user1.scheduleInfo?.workSchedule}, ${user1.scheduleInfo?.wakeUpTime}-${user1.scheduleInfo?.bedTime}
-- Preferences: ${JSON.stringify(user1.preferencesInfo)}
-- Services: Offers ${user1.servicesInfo?.servicesOffered?.join(', ')}, Needs ${user1.servicesInfo?.servicesNeeded?.join(', ')}
-- Housing: ${user1.housingInfo?.housingType}, Budget $${user1.housingInfo?.budget?.min}-${user1.housingInfo?.budget?.max}
+- Schedule: ${user1.schedule_info?.work_schedule}, ${user1.schedule_info?.wakeUpTime}-${user1.schedule_info?.bedTime}
+- Preferences: ${JSON.stringify(user1.preferences_info)}
+- Services: Offers ${user1.services_info?.services_offered?.join(', ')}, Needs ${user1.services_info?.services_needed?.join(', ')}
+- Housing: ${user1.housing_info?.housing_type}, Budget $${user1.housing_info?.budget?.min}-${user1.housing_info?.budget?.max}
 
 User 2:
 - Bio: ${user2.bio}
-- Schedule: ${user2.scheduleInfo?.workSchedule}, ${user2.scheduleInfo?.wakeUpTime}-${user2.scheduleInfo?.bedTime}
-- Preferences: ${JSON.stringify(user2.preferencesInfo)}
-- Services: Offers ${user2.servicesInfo?.servicesOffered?.join(', ')}, Needs ${user2.servicesInfo?.servicesNeeded?.join(', ')}
+- Schedule: ${user2.schedule_info?.work_schedule}, ${user2.schedule_info?.wakeUpTime}-${user2.schedule_info?.bedTime}
+- Preferences: ${JSON.stringify(user2.preferences_info)}
+- Services: Offers ${user2.services_info?.services_offered?.join(', ')}, Needs ${user2.services_info?.services_needed?.join(', ')}
 
 Rule-based compatibility score: ${baseScore}/100
 
@@ -447,61 +428,61 @@ Respond in JSON format: {"score": number, "reasons": string[], "concerns": strin
   }
 
   // Main matching method
-  async findMatches(criteria: MatchingCriteria, candidateUsers: MockUser[]): Promise<MatchResult[]> {
-    const { currentUser, maxResults = 10, minScore = 60, useAI = false } = criteria;
+  async findMatches(criteria: MatchingCriteria, candidate_users: DbUser[]): Promise<MatchResult[]> {
+    const { current_user, max_results = 10, min_score = 60, use_ai = false } = criteria;
     const results: MatchResult[] = [];
 
-    for (const candidate of candidateUsers) {
+    for (const candidate of candidate_users) {
       // Calculate compatibility scores for each dimension
-      const scheduleScore = this.calculateScheduleCompatibility(currentUser, candidate);
-      const lifestyleScore = this.calculateLifestyleCompatibility(currentUser, candidate);
-      const preferencesScore = this.calculatePreferencesCompatibility(currentUser, candidate);
-      const locationScore = this.calculateLocationCompatibility(currentUser, candidate);
-      const budgetScore = this.calculateBudgetCompatibility(currentUser, candidate);
-      const servicesScore = this.calculateServicesCompatibility(currentUser, candidate);
+      const schedule = this.calculateScheduleCompatibility(current_user, candidate);
+      const lifestyle = this.calculateLifestyleCompatibility(current_user, candidate);
+      const preferences = this.calculatePreferencesCompatibility(current_user, candidate);
+      const location = this.calculateLocationCompatibility(current_user, candidate);
+      const budget = this.calculateBudgetCompatibility(current_user, candidate);
+      const services = this.calculateServicesCompatibility(current_user, candidate);
 
-      const compatibilityAnalysis = {
-        schedule: scheduleScore,
-        lifestyle: lifestyleScore,
-        preferences: preferencesScore,
-        location: locationScore,
-        budget: budgetScore,
-        services: servicesScore
+      const compatibility_analysis = {
+        schedule,
+        lifestyle,
+        preferences,
+        location,
+        budget,
+        services
       };
 
       // Calculate weighted total score
       let totalScore = 
-        scheduleScore * this.WEIGHTS.schedule +
-        lifestyleScore * this.WEIGHTS.lifestyle +
-        preferencesScore * this.WEIGHTS.preferences +
-        locationScore * this.WEIGHTS.location +
-        budgetScore * this.WEIGHTS.budget +
-        servicesScore * this.WEIGHTS.services;
+        schedule * this.WEIGHTS.schedule +
+        lifestyle * this.WEIGHTS.lifestyle +
+        preferences * this.WEIGHTS.preferences +
+        location * this.WEIGHTS.location +
+        budget * this.WEIGHTS.budget +
+        services * this.WEIGHTS.services;
 
-      let matchReasons = this.generateMatchReasons(currentUser, candidate, compatibilityAnalysis);
+      let matchReasons = this.generateMatchReasons(current_user, candidate, compatibility_analysis);
 
       // If AI enhancement is enabled
-      if (useAI) {
-        const aiResult = await this.getAIEnhancedMatch(currentUser, candidate, totalScore);
+      if (use_ai) {
+        const aiResult = await this.getAIEnhancedMatch(current_user, candidate, totalScore);
         totalScore = aiResult.score;
         matchReasons = [...matchReasons, ...aiResult.reasons];
       }
 
       // Only include matches that reach minimum score
-      if (totalScore >= minScore) {
+      if (totalScore >= min_score) {
         results.push({
-          user: { ...candidate, matchScore: totalScore, matchReasons },
-          matchScore: totalScore,
-          matchReasons,
-          compatibilityAnalysis
+          user: candidate,
+          match_score: totalScore,
+          match_reasons: matchReasons,
+          compatibility_analysis: compatibility_analysis
         });
       }
     }
 
     // Sort by match score and limit results
     return results
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, maxResults);
+      .sort((a, b) => b.match_score - a.match_score)
+      .slice(0, max_results);
   }
 }
 
