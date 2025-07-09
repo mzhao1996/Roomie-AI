@@ -11,7 +11,7 @@ const OnboardingPage: React.FC = () => {
   useEffect(() => {
     const checkOnboarding = async () => {
       if (user) {
-        const { data, error } = await getOnboardingData(user.uid);
+        const { data } = await getOnboardingData(user.uid);
         if (data && data.completed) {
           // 如果数据库中已完成onboarding，保存到localStorage并跳转
           localStorage.setItem(`onboarding_${user.uid}`, JSON.stringify(data));
