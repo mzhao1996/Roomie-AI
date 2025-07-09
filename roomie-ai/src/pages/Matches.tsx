@@ -86,6 +86,20 @@ const Matches: React.FC = () => {
     return scheduleMap[schedule] || schedule;
   };
 
+  const handleSendMessage = (matchUser: MockUser) => {
+    // Create a simple message prompt
+    const message = prompt(
+      `Send a message to ${matchUser.basicInfo?.firstName} ${matchUser.basicInfo?.lastName}:`,
+      `Hi ${matchUser.basicInfo?.firstName}! I saw your profile and think we could be great roommates. Would you like to chat about finding a place together?`
+    );
+    
+    if (message && message.trim()) {
+      // For now, just show a success alert
+      // In a real app, this would send the message to a backend service
+      alert(`Message sent to ${matchUser.basicInfo?.firstName}!\n\nMessage: "${message}"\n\nThey will be notified and can respond through the app.`);
+    }
+  };
+
   const CompatibilityBreakdown: React.FC<{ analysis: MatchResult['compatibilityAnalysis'] }> = ({ analysis }) => (
     <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
       <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
@@ -318,7 +332,10 @@ const Matches: React.FC = () => {
 
               {/* Contact Button */}
               <div className="pt-6">
-                <button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-3">
+                <button 
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-3"
+                  onClick={() => handleSendMessage(matchUser)}
+                >
                   <span>💬</span>
                   <span>Send Message</span>
                   <span>→</span>
