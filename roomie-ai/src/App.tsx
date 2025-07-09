@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './AuthContext';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import OnboardingPage from './pages/OnboardingPage';
+import Matches from './pages/Matches';
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -26,6 +27,7 @@ const AppContent: React.FC = () => {
     <Routes>
       <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/matches" element={<Matches />} />
       <Route path="/" element={<Dashboard />} />
     </Routes>
   );
