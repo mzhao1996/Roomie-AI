@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { matchingEngine, type MatchResult } from '../services/matchingEngine';
 // Removed: import { MOCK_USERS, type MockUser } from '../data/mockUsers';
 import { fetchCompletedUsers } from '../services/userService';
+import { camelToSnake } from '../utils/caseConvert';
 
 const Matches: React.FC = () => {
   const { user } = useAuth();
@@ -53,7 +54,13 @@ const Matches: React.FC = () => {
         useAI: useAI
       }, candidateUsers);
 
-      setMatches(matchResults);
+      // Convert all match.user fields to snake_case for UI compatibility
+      const snakeCaseMatches = matchResults.map(match => ({
+        ...match,
+        user: camelToSnake(match.user)
+      }));
+
+      setMatches(snakeCaseMatches);
     } catch (err) {
       console.error('Failed to find matches:', err);
       setError('Unable to get match results, please try again later.');
@@ -142,6 +149,8 @@ const Matches: React.FC = () => {
     const [expanded, setExpanded] = useState(false);
     const { user: matchUser } = match;
 
+    console.log('matchUser', matchUser);
+
     return (
       <div className={`bg-white rounded-xl shadow-xl border-2 ${rank <= 3 ? 'border-blue-300 shadow-blue-100' : 'border-gray-200'} overflow-hidden hover:shadow-2xl transition-all duration-300`}>
         {/* Ranking Badge */}
@@ -182,7 +191,7 @@ const Matches: React.FC = () => {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <span>📍</span>
-                  <span className="font-medium">{matchUser.basic_info?.location}</span>
+                  <span className="font-medium">{matchUser.basic_info?.location || 'N/A'}</span>
                 </div>
                 <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
                   <span>🎂</span>
