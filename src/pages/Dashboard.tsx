@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { useAuth } from '../AuthContext';
 import type { OnboardingData } from '../types/onboarding';
+import { DEFAULT_ONBOARDING_DATA } from '../types/onboarding';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ const Dashboard: React.FC = () => {
       if (savedData) {
         try {
           const parsedData = JSON.parse(savedData);
-          setOnboardingData(parsedData);
+          setOnboardingData({ ...DEFAULT_ONBOARDING_DATA, ...parsedData });
         } catch (error) {
           console.error('Error loading onboarding data:', error);
         }
@@ -35,7 +36,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleStartOnboarding = () => {
-    navigate('/onboarding');
+    navigate('/onboarding?edit=true');
   };
 
   const handleFindMatches = () => {
@@ -137,7 +138,9 @@ const Dashboard: React.FC = () => {
                   <div className="text-blue-600 text-2xl mb-2">⏰</div>
                   <div className="text-sm text-gray-600 mb-1">Schedule</div>
                   <div className="font-semibold text-gray-800">
-                    {onboardingData.scheduleInfo.workSchedule.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {onboardingData.scheduleInfo?.workSchedule
+                      ? onboardingData.scheduleInfo.workSchedule.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+                      : 'N/A'}
                   </div>
                 </div>
                 
@@ -145,7 +148,9 @@ const Dashboard: React.FC = () => {
                   <div className="text-green-600 text-2xl mb-2">💰</div>
                   <div className="text-sm text-gray-600 mb-1">Budget Range</div>
                   <div className="font-semibold text-gray-800">
-                    ${onboardingData.housingInfo.budget.min.toLocaleString()} - ${onboardingData.housingInfo.budget.max.toLocaleString()}/month
+                    {onboardingData.housingInfo?.budget
+                      ? `$${onboardingData.housingInfo.budget.min.toLocaleString()} - $${onboardingData.housingInfo.budget.max.toLocaleString()}/month`
+                      : 'N/A'}
                   </div>
                 </div>
                 
@@ -153,7 +158,9 @@ const Dashboard: React.FC = () => {
                   <div className="text-purple-600 text-2xl mb-2">📅</div>
                   <div className="text-sm text-gray-600 mb-1">Move-in Date</div>
                   <div className="font-semibold text-gray-800">
-                    {new Date(onboardingData.housingInfo.moveInDate).toLocaleDateString()}
+                    {onboardingData.housingInfo?.moveInDate
+                      ? new Date(onboardingData.housingInfo.moveInDate).toLocaleDateString()
+                      : 'N/A'}
                   </div>
                 </div>
                 
@@ -161,7 +168,9 @@ const Dashboard: React.FC = () => {
                   <div className="text-orange-600 text-2xl mb-2">🏳️‍🌈</div>
                   <div className="text-sm text-gray-600 mb-1">LGBTQ+ Inclusive</div>
                   <div className="font-semibold text-gray-800">
-                    {onboardingData.preferencesInfo.lgbtqInclusive ? '✅ Yes' : '❌ No'}
+                    {onboardingData.preferencesInfo?.lgbtqInclusive !== undefined
+                      ? (onboardingData.preferencesInfo.lgbtqInclusive ? '✅ Yes' : '❌ No')
+                      : 'N/A'}
                   </div>
                 </div>
               </div>
