@@ -41,3 +41,13 @@ export async function fetchCompletedUsers(): Promise<User[]> {
   if (error) throw error;
   return data as User[];
 } 
+
+// Get onboarding data for a user
+export async function getOnboardingData(userId: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  return { data, error };
+} 
