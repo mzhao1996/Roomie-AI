@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div>
       {/* Header */}
       <header className="bg-white shadow-lg border-b border-gray-200 backdrop-blur-lg bg-opacity-95 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4">
@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
       </header>
       
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="dashboard-main px-6 py-12">
         {/* Welcome Section */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">

@@ -18,6 +18,35 @@ body {
 
 .App {
   min-height: 100vh;
+  width: calc(100vw - 1200px);
+  margin-left: 600px;
+  margin-right: 600px;
+  background: white;
+  box-shadow: 0 0 24px 0 rgba(0,0,0,0.04);
+}
+
+@media (max-width: 2400px) {
+  .App {
+    width: 100vw;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 1800px) {
+  .App {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 1200px) {
+  .App {
+    width: 100vw;
+    margin-left: 0;
+    margin-right: 0;
+    box-shadow: none;
+  }
 }
 
 /* Loading styles */
@@ -896,4 +925,9 @@ input[type="checkbox"]:hover {
   .nav-button {
     width: 100%;
   }
+}
+
+.dashboard-main {
+  width: 100%;
+  box-sizing: border-box;
 }
