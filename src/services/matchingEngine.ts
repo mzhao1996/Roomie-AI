@@ -36,7 +36,6 @@ class MatchingEngine {
   // Calculate schedule compatibility
   private calculateScheduleCompatibility(user1: OnboardingData, user2: User): number {
     let score = 0;
-    const reasons: string[] = [];
 
     // Work type compatibility
     const workScheduleCompatibility = this.getWorkScheduleScore(
@@ -311,9 +310,6 @@ class MatchingEngine {
     const services2 = user2.services_info;
 
     if (!services1 || !services2) return 50;
-
-    let score = 0;
-    let matches = 0;
 
     // Check service exchange complementarity
     const offered1 = services1.servicesOffered || [];
