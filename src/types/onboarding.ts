@@ -77,7 +77,13 @@ export const DEFAULT_ONBOARDING_DATA: OnboardingData = {
     servicesNeeded: []
   },
   housingInfo: {
-    moveInDate: '',
+    moveInDate: (() => {
+      const now = new Date();
+      const year = now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear();
+      const month = now.getMonth() === 11 ? 0 : now.getMonth() + 1;
+      const nextMonthFirst = new Date(year, month, 1);
+      return nextMonthFirst.toISOString().split('T')[0];
+    })(),
     budget: {
       min: 0,
       max: 0
