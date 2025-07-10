@@ -10,12 +10,38 @@ const AuthPage: React.FC = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <h1>Welcome to Roomie AI</h1>
-          <p>Find your perfect roommate match</p>
+      <div className="login-container">
+        <div className="login-card">
+          <div className="login-header">
+            <div className="logo">
+              <span className="logo-icon">🏠</span>
+              <span className="logo-text">Roomie AI</span>
+            </div>
+            <h1 className="login-title">Welcome Back</h1>
+            <p className="login-subtitle">Find your perfect roommate match</p>
+          </div>
+
+          <div className="auth-tabs">
+            <button 
+              className={`tab-btn ${mode === 'signin' ? 'active' : ''}`}
+              onClick={() => setMode('signin')}
+            >
+              Sign In
+            </button>
+            <button 
+              className={`tab-btn ${mode === 'signup' ? 'active' : ''}`}
+              onClick={() => setMode('signup')}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <AuthForm mode={mode} onToggleMode={toggleMode} />
+
+          <div className="login-footer">
+            <a href="#" className="back-link">← Back to Home</a>
+          </div>
         </div>
-        <AuthForm mode={mode} onToggleMode={toggleMode} />
       </div>
     </div>
   );

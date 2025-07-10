@@ -45,225 +45,203 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-2xl">
-          <div className="relative mb-6">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl">🏠</span>
-            </div>
-          </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">Loading Your Profile</h3>
-          <p className="text-gray-600">Just a moment...</p>
-        </div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading your profile...</p>
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200 backdrop-blur-lg bg-opacity-95 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xl font-bold">
-                🏠
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Roomie AI
-                </h1>
-                <p className="text-gray-600 text-sm">Your Smart Roommate Finder</p>
-              </div>
+    <div className="dashboard-layout">
+      {/* Navigation Header */}
+      <header className="navbar">
+        <div className="nav-container">
+          <div className="nav-brand">
+            <span className="logo-icon">🏠</span>
+            <span className="logo-text">Roomie AI</span>
+          </div>
+          
+          <nav className="nav-menu">
+            <a href="/dashboard" className="nav-link active">Dashboard</a>
+            <a href="/matches" className="nav-link">Matches</a>
+            <a href="/onboarding" className="nav-link">Profile</a>
+          </nav>
+          
+          <div className="nav-user">
+            <div className="notifications">
+              <span className="notification-icon">🔔</span>
+              <span className="notification-badge">3</span>
             </div>
-            <button 
-              onClick={handleSignOut}
-              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
-            >
-              <span>👋</span>
-              <span>Sign Out</span>
+            <button onClick={handleSignOut} className="user-avatar">
+              <img src="https://via.placeholder.com/40x40/9c88ff/ffffff?text=U" alt="User Avatar" />
             </button>
           </div>
         </div>
       </header>
-      
-      {/* Main Content */}
-      <div className="dashboard-main px-6 py-12">
-        {/* Welcome Section */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">
-            Welcome back{onboardingData?.basicInfo?.firstName ? `, ${onboardingData.basicInfo.firstName}` : ''}! 👋
-          </h2>
-          <p className="text-xl text-gray-600 mb-6">Ready to find your perfect roommate match?</p>
-          
-          {onboardingData?.completed && (
-            <div className="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full font-medium">
-              <span className="mr-2">✅</span>
-              Profile Complete - Ready to find matches!
-            </div>
-          )}
-        </div>
 
-        {/* Onboarding Prompt for Incomplete Profiles */}
-        {!onboardingData?.completed && (
-          <div className="mb-12">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-8 rounded-2xl shadow-xl text-white text-center">
-              <div className="text-6xl mb-4">🚀</div>
-              <h3 className="text-2xl font-bold mb-4">Complete Your Profile</h3>
-              <p className="text-lg mb-6 opacity-90">
-                To get the best roommate matches, please complete your onboarding profile.
-                It only takes a few minutes!
-              </p>
-              <button 
-                className="bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                onClick={handleStartOnboarding}
-              >
-                {onboardingData ? 'Continue Onboarding' : 'Start Onboarding'} →
+      {/* Main Content */}
+      <main className="main-content">
+        <div className="dashboard-container">
+          {/* Welcome Section */}
+          <section className="welcome-section">
+            <div className="welcome-content">
+              <h1 className="welcome-title">
+                Welcome back{onboardingData?.basicInfo?.firstName ? `, ${onboardingData.basicInfo.firstName}` : ''}! 👋
+              </h1>
+              <p className="welcome-subtitle">Let's find your perfect roommate match</p>
+            </div>
+            {!onboardingData?.completed && (
+              <div className="profile-completion">
+                <div className="completion-card">
+                  <h3>Profile Completion</h3>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: '45%' }}></div>
+                  </div>
+                  <p>45% Complete</p>
+                  <button onClick={handleStartOnboarding} className="btn btn-secondary btn-sm">
+                    Complete Profile
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Quick Stats */}
+          <section className="stats-section">
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-icon">💜</div>
+                <div className="stat-content">
+                  <h3>12</h3>
+                  <p>Total Matches</p>
+                </div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-icon">💬</div>
+                <div className="stat-content">
+                  <h3>5</h3>
+                  <p>Active Chats</p>
+                </div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-icon">⭐</div>
+                <div className="stat-content">
+                  <h3>3</h3>
+                  <p>Favorites</p>
+                </div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-icon">👁️</div>
+                <div className="stat-content">
+                  <h3>28</h3>
+                  <p>Profile Views</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Recent Matches */}
+          {onboardingData?.completed && (
+            <section className="matches-section">
+              <div className="section-header">
+                <h2>Recent Matches</h2>
+                <button onClick={handleFindMatches} className="view-all-link">View All</button>
+              </div>
+              
+              <div className="matches-grid">
+                <div className="match-card">
+                  <div className="match-avatar">
+                    <img src="https://via.placeholder.com/80x80/9c88ff/ffffff?text=S" alt="Sarah" />
+                    <div className="match-score">95%</div>
+                  </div>
+                  <div className="match-info">
+                    <h3>Sarah Johnson</h3>
+                    <p className="match-age">24 • Graduate Student</p>
+                    <p className="match-reason">Night shift schedule complements yours</p>
+                    <div className="match-tags">
+                      <span className="tag">LGBTQ+ Friendly</span>
+                      <span className="tag">Pet Lover</span>
+                    </div>
+                  </div>
+                  <div className="match-actions">
+                    <button className="btn btn-primary btn-sm">Message</button>
+                  </div>
+                </div>
+                
+                <div className="match-card">
+                  <div className="match-avatar">
+                    <img src="https://via.placeholder.com/80x80/9c88ff/ffffff?text=M" alt="Mike" />
+                    <div className="match-score">88%</div>
+                  </div>
+                  <div className="match-info">
+                    <h3>Mike Chen</h3>
+                    <p className="match-age">26 • Software Engineer</p>
+                    <p className="match-reason">Similar budget and location preferences</p>
+                    <div className="match-tags">
+                      <span className="tag">Quiet</span>
+                      <span className="tag">Tech Professional</span>
+                    </div>
+                  </div>
+                  <div className="match-actions">
+                    <button className="btn btn-primary btn-sm">Message</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Onboarding Prompt for Incomplete Profiles */}
+          {!onboardingData?.completed && (
+            <section className="onboarding-prompt">
+              <div className="prompt-card">
+                <div className="prompt-icon">🚀</div>
+                <h3>Complete Your Profile</h3>
+                <p>To get the best roommate matches, please complete your onboarding profile. It only takes a few minutes!</p>
+                <button onClick={handleStartOnboarding} className="btn btn-primary">
+                  {onboardingData ? 'Continue Onboarding' : 'Start Onboarding'} →
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* Quick Actions */}
+          <section className="actions-section">
+            <div className="section-header">
+              <h2>Quick Actions</h2>
+            </div>
+            
+            <div className="actions-grid">
+              <button onClick={handleStartOnboarding} className="action-card">
+                <div className="action-icon">📝</div>
+                <h3>Update Preferences</h3>
+                <p>Refine your roommate search criteria</p>
+              </button>
+              
+              <button onClick={handleFindMatches} className="action-card">
+                <div className="action-icon">🔍</div>
+                <h3>Browse Matches</h3>
+                <p>Explore all potential roommates</p>
+              </button>
+              
+              <button className="action-card">
+                <div className="action-icon">💬</div>
+                <h3>Messages</h3>
+                <p>Continue conversations</p>
+              </button>
+              
+              <button className="action-card">
+                <div className="action-icon">🏠</div>
+                <h3>Listings</h3>
+                <p>Find available rooms</p>
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Profile Summary for Completed Profiles */}
-        {onboardingData?.completed && (
-          <div className="mb-12">
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <span className="mr-3">👤</span>
-                Your Profile Summary
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                  <div className="text-blue-600 text-2xl mb-2">⏰</div>
-                  <div className="text-sm text-gray-600 mb-1">Schedule</div>
-                  <div className="font-semibold text-gray-800">
-                    {onboardingData.scheduleInfo?.workSchedule
-                      ? onboardingData.scheduleInfo.workSchedule.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
-                      : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                  <div className="text-green-600 text-2xl mb-2">💰</div>
-                  <div className="text-sm text-gray-600 mb-1">Budget Range</div>
-                  <div className="font-semibold text-gray-800">
-                    {onboardingData.housingInfo?.budget
-                      ? `$${onboardingData.housingInfo.budget.min.toLocaleString()} - $${onboardingData.housingInfo.budget.max.toLocaleString()}/month`
-                      : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                  <div className="text-purple-600 text-2xl mb-2">📅</div>
-                  <div className="text-sm text-gray-600 mb-1">Move-in Date</div>
-                  <div className="font-semibold text-gray-800">
-                    {onboardingData.housingInfo?.moveInDate
-                      ? new Date(onboardingData.housingInfo.moveInDate).toLocaleDateString()
-                      : 'N/A'}
-                  </div>
-                </div>
-                
-                <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                  <div className="text-orange-600 text-2xl mb-2">🏳️‍🌈</div>
-                  <div className="text-sm text-gray-600 mb-1">LGBTQ+ Inclusive</div>
-                  <div className="font-semibold text-gray-800">
-                    {onboardingData.preferencesInfo?.lgbtqInclusive !== undefined
-                      ? (onboardingData.preferencesInfo.lgbtqInclusive ? '✅ Yes' : '❌ No')
-                      : 'N/A'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Complete Profile Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 hover:shadow-2xl transition-all duration-300">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                📝
-              </div>
-              <h4 className="text-2xl font-bold text-gray-800 mb-2">
-                {onboardingData?.completed ? 'Update Profile' : 'Complete Profile'}
-              </h4>
-              <p className="text-gray-600 leading-relaxed">
-                {onboardingData?.completed 
-                  ? 'Update your preferences, lifestyle, and requirements'
-                  : 'Tell us about your lifestyle, preferences, and needs'
-                }
-              </p>
-            </div>
-            <button 
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              onClick={handleStartOnboarding}
-            >
-              {onboardingData?.completed ? '⚙️ Update Profile' : '🚀 Start Onboarding'}
-            </button>
-          </div>
-          
-          {/* Find Matches Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200 hover:shadow-2xl transition-all duration-300">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                🔍
-              </div>
-              <h4 className="text-2xl font-bold text-gray-800 mb-2">Find Matches</h4>
-              <p className="text-gray-600 leading-relaxed">
-                Discover compatible roommates based on your preferences and lifestyle
-              </p>
-            </div>
-            <button 
-              className={`w-full font-bold py-4 px-6 rounded-lg transition-all duration-300 shadow-lg transform ${
-                onboardingData?.completed
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white hover:shadow-xl hover:scale-105'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-              disabled={!onboardingData?.completed}
-              onClick={handleFindMatches}
-            >
-              {onboardingData?.completed ? '🎯 Find My Matches' : '⏳ Complete Profile First'}
-            </button>
-            {!onboardingData?.completed && (
-              <p className="text-sm text-gray-500 mt-2 text-center">
-                Complete your profile to unlock matching
-              </p>
-            )}
-          </div>
+          </section>
         </div>
-
-        {/* Features Section */}
-        <div className="mt-16">
-          <h3 className="text-2xl font-bold text-gray-800 text-center mb-8">How Roomie AI Works</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-4">
-                📋
-              </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">Complete Profile</h4>
-              <p className="text-gray-600">Share your lifestyle, preferences, and housing needs</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-4">
-                🤖
-              </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">AI Matching</h4>
-              <p className="text-gray-600">Our smart algorithm finds compatible roommates</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-4">
-                💬
-              </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">Connect</h4>
-              <p className="text-gray-600">Start conversations with your top matches</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 };

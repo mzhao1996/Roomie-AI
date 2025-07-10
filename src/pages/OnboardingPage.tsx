@@ -26,8 +26,23 @@ const OnboardingPage: React.FC = () => {
   }, [user, navigate, location.search]);
 
   return (
-    <div className="onboarding-page">
-      <OnboardingFlow />
+    <div className="onboarding-layout">
+      {/* Progress Header */}
+      <header className="onboarding-header">
+        <div className="header-container">
+          <div className="logo">
+            <span className="logo-icon">🏠</span>
+            <span className="logo-text">Roomie AI</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Form */}
+      <main className="onboarding-main">
+        <div className="form-container">
+          <OnboardingFlow />
+        </div>
+      </main>
     </div>
   );
 };

@@ -200,58 +200,58 @@ const OnboardingFlow: React.FC = () => {
   const isLastStep = currentStep === STEP_TITLES.length;
 
   return (
-    <div className="onboarding-flow">
-      <div className="onboarding-container">
-        <StepIndicator
-          currentStep={currentStep}
-          totalSteps={STEP_TITLES.length}
-          stepTitles={STEP_TITLES}
-        />
-        
-        <div className="onboarding-content">
-          {renderCurrentStep()}
-        </div>
+    <form className="onboarding-form">
+      <StepIndicator
+        currentStep={currentStep}
+        totalSteps={STEP_TITLES.length}
+        stepTitles={STEP_TITLES}
+      />
+      
+      {/* Form Step */}
+      <div className="form-step active">
+        {renderCurrentStep()}
+      </div>
 
-        <div className="onboarding-navigation">
+      {/* Navigation */}
+      <div className="form-navigation">
+        <button
+          type="button"
+          onClick={handlePrevious}
+          disabled={currentStep === 1}
+          className={`btn ${currentStep === 1 ? 'btn-disabled' : 'btn-secondary'}`}
+        >
+          Previous
+        </button>
+
+        <button 
+          type="button"
+          onClick={handleBackToHome}
+          className="back-link"
+        >
+          ← Back to Dashboard
+        </button>
+
+        {isLastStep ? (
           <button
             type="button"
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
-            className="nav-button secondary"
+            onClick={handleComplete}
+            disabled={!canProceedToNext() || isSubmitting}
+            className={`btn ${!canProceedToNext() || isSubmitting ? 'btn-disabled' : 'btn-primary'}`}
           >
-            Previous
+            {isSubmitting ? 'Completing...' : 'Complete Setup'}
           </button>
-
-          <button 
+        ) : (
+          <button
             type="button"
-            onClick={handleBackToHome}
-            className="nav-button back-to-home"
+            onClick={handleNext}
+            disabled={!canProceedToNext()}
+            className={`btn ${!canProceedToNext() ? 'btn-disabled' : 'btn-primary'}`}
           >
-            Back to Home
+            Next
           </button>
-
-          {isLastStep ? (
-            <button
-              type="button"
-              onClick={handleComplete}
-              disabled={!canProceedToNext() || isSubmitting}
-              className="nav-button primary complete-button"
-            >
-              {isSubmitting ? 'Completing...' : 'Complete Setup'}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={!canProceedToNext()}
-              className="nav-button primary"
-            >
-              Next
-            </button>
-          )}
-        </div>
+        )}
       </div>
-    </div>
+    </form>
   );
 };
 

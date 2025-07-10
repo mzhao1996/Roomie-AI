@@ -8,17 +8,32 @@ interface StepIndicatorProps {
 
 const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, totalSteps, stepTitles }) => {
   return (
-    <div className="step-indicator">
-      <div className="step-progress">
-        <div 
-          className="step-progress-bar" 
-          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-        />
+    <div className="progress-indicator">
+      <div className="progress-steps">
+        {Array.from({ length: totalSteps }, (_, index) => {
+          const stepNumber = index + 1;
+          const isActive = stepNumber === currentStep;
+          const isCompleted = stepNumber < currentStep;
+          
+          return (
+            <React.Fragment key={stepNumber}>
+              <div 
+                className={`step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
+              >
+                {stepNumber}
+              </div>
+              {index < totalSteps - 1 && (
+                <div 
+                  className={`step-line ${isCompleted ? 'completed' : ''}`}
+                ></div>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
-      <div className="step-info">
-        <span className="step-number">Step {currentStep} of {totalSteps}</span>
-        <span className="step-title">{stepTitles[currentStep - 1]}</span>
-      </div>
+      <p className="progress-text">
+        Step {currentStep} of {totalSteps}: {stepTitles[currentStep - 1]}
+      </p>
     </div>
   );
 };
